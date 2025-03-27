@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
     def load_map(self):
         server_address = 'https://static-maps.yandex.ru/v1?'
         ll = 'll=37.617635,55.755814'
-        api_key = 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13'
+        api_key = 'Ваш ключ'
         size = '650,450'
         map_request = f"{server_address}{ll}&l=map&z={self.mash}&size={size}&apikey={api_key}"
         response = requests.get(map_request)
