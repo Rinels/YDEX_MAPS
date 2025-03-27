@@ -15,13 +15,13 @@ class MainWindow(QMainWindow):
         self.load_map()
 
     def load_map(self):
-        server = 'https://static-maps.yandex.ru/v1'
+        server = 'https://static-maps.yandex.ru/v1?'
         params = {
-            'll': '135.746181,-27.483765',
-            'spn': '0.5,0.5',
+            'll': '37.617635,55.755814',
+            'spn': '0.2,0.2',
             'l': 'map',
-            'size': '600,450',
-            'apikey': 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13'
+            'size': '650,450',
+            'apikey': '04e437d7-cc71-4689-b13e-217c78e3bd83'
         }
 
         response = requests.get(server, params=params)
