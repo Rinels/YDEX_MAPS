@@ -5,6 +5,7 @@ from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow, QApplication
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeyEvent
 
 
 class MainWindow(QMainWindow):
@@ -12,32 +13,38 @@ class MainWindow(QMainWindow):
         super().__init__()
         uic.loadUi('Design.ui', self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mash = 10
         self.load_map()
 
     def load_map(self):
-        server = 'https://static-maps.yandex.ru/v1?'
-        params = {
-            'll': '37.617635,55.755814',
-            'spn': '0.2,0.2',
-            'l': 'map',
-            'size': '650,450',
-            'apikey': '04e437d7-cc71-4689-b13e-217c78e3bd83'
-        }
-
-        response = requests.get(server, params=params)
-
+        server_address = 'https://static-maps.yandex.ru/v1?'
+        ll = 'll=37.617635,55.755814'
+        api_key = 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13'
+        size = '650,450'
+        map_request = f"{server_address}{ll}&l=map&z={self.mash}&size={size}&apikey={api_key}"
+        response = requests.get(map_request)
         if not response.ok:
             print(f"Ошибка {response.status_code}: {response.reason}")
             print("URL:", response.url)
             sys.exit(1)
 
-        # Сохраняем и отображаем карту
-        map_file = "map.png"
-        with open(map_file, "wb") as f:
+        self.map_file = "map.png"
+        with open(self.map_file, "wb") as f:
             f.write(response.content)
 
-        self.label.setPixmap(QPixmap(map_file))
-        os.remove(map_file)
+        self.label.setPixmap(QPixmap(self.map_file))
+        os.remove(self.map_file)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        super().keyPressEvent(event)
+        if event.key() == 16777235:
+            if self.mash < 17:
+                self.mash += 1
+                self.load_map()
+        elif event.key() == 16777237:
+            if self.mash > 1:
+                self.mash -= 1
+                self.load_map()
 
 
 if __name__ == '__main__':
