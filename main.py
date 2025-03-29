@@ -14,14 +14,15 @@ class MainWindow(QMainWindow):
         uic.loadUi('Design.ui', self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mash = 10
+        self.longitude = 37.617635
+        self.latitude = 55.755814
         self.load_map()
 
     def load_map(self):
         server_address = 'https://static-maps.yandex.ru/v1?'
-        ll = 'll=37.617635,55.755814'
-        api_key = 'Ваш ключ'
+        api_key = '04e437d7-cc71-4689-b13e-217c78e3bd83'
         size = '650,450'
-        map_request = f"{server_address}{ll}&l=map&z={self.mash}&size={size}&apikey={api_key}"
+        map_request = f"{server_address}ll={self.longitude},{self.latitude}&l=map&z={self.mash}&size={size}&apikey={api_key}"
         response = requests.get(map_request)
         if not response.ok:
             print(f"Ошибка {response.status_code}: {response.reason}")
@@ -37,11 +38,39 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
-        if event.key() == 16777235:
+
+        move_factor = 0.2 / (2 ** (self.mash - 10))
+
+        if event.key() == Qt.Key.Key_Up:
+            self.latitude += move_factor
+            if self.latitude > 85:
+                self.latitude = 85
+            self.load_map()
+
+        elif event.key() == Qt.Key.Key_Down:
+            self.latitude -= move_factor
+            if self.latitude < -85:
+                self.latitude = -85
+            self.load_map()
+
+        elif event.key() == Qt.Key.Key_Left:
+            self.longitude -= move_factor
+            if self.longitude < -180:
+                self.longitude += 360
+            self.load_map()
+
+        elif event.key() == Qt.Key.Key_Right:
+            self.longitude += move_factor
+            if self.longitude > 180:
+                self.longitude -= 360
+            self.load_map()
+
+        elif event.key() == Qt.Key.Key_PageUp:
             if self.mash < 17:
                 self.mash += 1
                 self.load_map()
-        elif event.key() == 16777237:
+
+        elif event.key() == Qt.Key.Key_PageDown:
             if self.mash > 1:
                 self.mash -= 1
                 self.load_map()
