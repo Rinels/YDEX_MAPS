@@ -12,18 +12,32 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('Design.ui', self)
+
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.mash = 10
         self.longitude = 37.617635
         self.latitude = 55.755814
+        self.current_theme = "light"
+
+        self.radioButton.toggled.connect(self.theme)
+
         self.load_map()
 
     def load_map(self):
         server_address = 'https://static-maps.yandex.ru/v1?'
         api_key = '04e437d7-cc71-4689-b13e-217c78e3bd83'
         size = '650,450'
-        map_request = f"{server_address}ll={self.longitude},{self.latitude}&l=map&z={self.mash}&size={size}&apikey={api_key}"
+        map_request = (
+            f"{server_address}"
+            f"ll={self.longitude},{self.latitude}"
+            f"&l=map&z={self.mash}"
+            f"&size={size}"
+            f"&theme={self.current_theme}"
+            f"&apikey={api_key}"
+        )
         response = requests.get(map_request)
+
         if not response.ok:
             print(f"Ошибка {response.status_code}: {response.reason}")
             print("URL:", response.url)
@@ -35,6 +49,13 @@ class MainWindow(QMainWindow):
 
         self.label.setPixmap(QPixmap(self.map_file))
         os.remove(self.map_file)
+
+    def theme(self):
+        if self.radioButton.isChecked():
+            self.current_theme = "dark"
+        else:
+            self.current_theme = "light"
+        self.load_map()
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
