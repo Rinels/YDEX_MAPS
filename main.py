@@ -19,6 +19,7 @@ class MainWindow(QMainWindow):
         self.longitude = 37.617635
         self.latitude = 55.755814
         self.current_theme = "light"
+        self.check = False
 
         self.radioButton.toggled.connect(self.theme)
 
@@ -34,8 +35,11 @@ class MainWindow(QMainWindow):
             f"&l=map&z={self.mash}"
             f"&size={size}"
             f"&theme={self.current_theme}"
-            f"&apikey={api_key}"
         )
+        if self.check:
+            map_request += f"&pt={self.longitude},{self.latitude},pm2rdm&apikey={api_key}"
+        else:
+            map_request += f"&apikey={api_key}"
         response = requests.get(map_request)
 
         if not response.ok:
@@ -56,6 +60,20 @@ class MainWindow(QMainWindow):
         else:
             self.current_theme = "light"
         self.load_map()
+
+    def search(self, search_quest):
+        self.check = True
+        server_address = 'http://geocode-maps.yandex.ru/1.x/?'
+        api_key = '8013b162-6b42-4997-9691-77b7074026e0'
+        geocoder_request = f'{server_address}apikey={api_key}&geocode={search_quest}&format=json'  # запрос Json (вид)
+        response = requests.get(geocoder_request)
+        if response:
+            json_response = response.json()
+            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+            toponym_coodrinates = toponym["Point"]["pos"].split()  # Координаты центра топонима:
+            self.longitude = toponym_coodrinates[0]
+            self.latitude = toponym_coodrinates[1]
+            self.load_map()
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
