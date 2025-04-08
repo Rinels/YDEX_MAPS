@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         self.check = True
         server_address = 'http://geocode-maps.yandex.ru/1.x/?'
         api_key = '8013b162-6b42-4997-9691-77b7074026e0'
-        geocoder_request = f'{server_address}apikey={api_key}&geocode={self.textEdit}&format=json'  # запрос Json (вид)
+        geocoder_request = f'{server_address}apikey={api_key}&geocode={self.textEdit.text()}&format=json'
         response = requests.get(geocoder_request)
         if response:
             json_response = response.json()
