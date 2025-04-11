@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
 
         self.findButton.clicked.connect(self.search)
         self.radioButton.toggled.connect(self.theme)
+        self.cleanButton.clicked.connect(self.clean)
 
         self.load_map()
 
@@ -61,6 +62,10 @@ class MainWindow(QMainWindow):
             self.current_theme = "dark"
         else:
             self.current_theme = "light"
+        self.load_map()
+
+    def clean(self):
+        self.check = False
         self.load_map()
 
     def search(self):
