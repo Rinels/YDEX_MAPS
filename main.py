@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
 
     def clean(self):
         self.check = False
+        self.addressLine.clear()
         self.load_map()
 
     def search(self):
@@ -77,9 +78,11 @@ class MainWindow(QMainWindow):
         if response:
             json_response = response.json()
             toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+            toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
             toponym_coodrinates = toponym["Point"]["pos"].split()  # Координаты центра топонима:
             self.longitude = toponym_coodrinates[0]
             self.latitude = toponym_coodrinates[1]
+            self.addressLine.setText(toponym_address)
             self.load_map()
 
     def keyPressEvent(self, event: QKeyEvent):
