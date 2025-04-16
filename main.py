@@ -2,7 +2,7 @@ import os
 import sys
 import requests
 from PyQt6 import uic
-from PyQt6.QtWidgets import QMainWindow, QApplication
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QKeyEvent
@@ -18,11 +18,14 @@ class MainWindow(QMainWindow):
         self.mash = 10
         self.longitude = 37.617635
         self.latitude = 55.755814
+        self.point0 = 0
+        self.point1 = 0
+
         self.current_theme = "light"
-        self.check = False
+        self.point = False
 
 
-        self.findButton.clicked.connect(self.search)
+        self.findOpen.clicked.connect(self.find)
         self.radioButton.toggled.connect(self.theme)
         self.cleanButton.clicked.connect(self.clean)
 
@@ -39,8 +42,8 @@ class MainWindow(QMainWindow):
             f"&size={size}"
             f"&theme={self.current_theme}"
         )
-        if self.check:
-            map_request += f"&pt={self.longitude},{self.latitude},pm2rdm&apikey={api_key}"
+        if self.point:
+            map_request += f"&pt={self.point0},{self.point1},pm2rdm&apikey={api_key}"
         else:
             map_request += f"&apikey={api_key}"
         response = requests.get(map_request)
@@ -64,26 +67,16 @@ class MainWindow(QMainWindow):
             self.current_theme = "light"
         self.load_map()
 
+
     def clean(self):
-        self.check = False
+        self.point = False
         self.addressLine.clear()
         self.load_map()
 
-    def search(self):
-        self.check = True
-        server_address = 'http://geocode-maps.yandex.ru/1.x/?'
-        api_key = '8013b162-6b42-4997-9691-77b7074026e0'
-        geocoder_request = f'{server_address}apikey={api_key}&geocode={self.textEdit.text()}&format=json'
-        response = requests.get(geocoder_request)
-        if response:
-            json_response = response.json()
-            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
-            toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
-            toponym_coodrinates = toponym["Point"]["pos"].split()  # Координаты центра топонима:
-            self.longitude = toponym_coodrinates[0]
-            self.latitude = toponym_coodrinates[1]
-            self.addressLine.setText(toponym_address)
-            self.load_map()
+    def find(self):
+        self.search_window = SearchWindow(self)
+        self.search_window.exec()
+
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
@@ -123,6 +116,53 @@ class MainWindow(QMainWindow):
             if self.mash > 1:
                 self.mash -= 1
                 self.load_map()
+                
+
+class SearchWindow(QDialog):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+        uic.loadUi('search.ui', self)
+
+        self.index = False
+        self.findButton.clicked.connect(self.search)
+        self.indexButton.toggled.connect(self.toggle_index)
+
+    def toggle_index(self):
+        if self.indexButton.isChecked():
+            self.index = True
+        else:
+            self.index = False
+        self.search()
+
+    def search(self):
+        self.main_window.point = True
+        server_address = 'http://geocode-maps.yandex.ru/1.x/?'
+        api_key = '8013b162-6b42-4997-9691-77b7074026e0'
+        geocoder_request = f'{server_address}apikey={api_key}&geocode={self.searchEdit.text()}&format=json'
+        response = requests.get(geocoder_request)
+        if response:
+            json_response = response.json()
+            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+            toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
+            toponym_coodrinates = toponym["Point"]["pos"].split()
+            toponym_index = ""
+            address_data = toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]
+            if "postal_code" in address_data:
+                toponym_index = address_data["postal_code"]
+            self.main_window.longitude = float(toponym_coodrinates[0])
+            self.main_window.latitude = float(toponym_coodrinates[1])
+
+            self.main_window.point0 = float(toponym_coodrinates[0])
+            self.main_window.point1 = float(toponym_coodrinates[1])
+
+            if self.index and toponym_index:
+                self.main_window.addressLine.setText(f'{toponym_address} Индекс: {toponym_index}')
+            else:
+                self.main_window.addressLine.setText(toponym_address)
+
+
+            self.main_window.load_map()
 
 
 if __name__ == '__main__':
