@@ -11,7 +11,7 @@ from PyQt6.QtGui import QKeyEvent
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('Design.ui', self)
+        uic.loadUi('MainWindow.ui', self)
 
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -23,7 +23,6 @@ class MainWindow(QMainWindow):
 
         self.current_theme = "light"
         self.point = False
-
 
         self.findOpen.clicked.connect(self.find)
         self.radioButton.toggled.connect(self.theme)
@@ -67,7 +66,6 @@ class MainWindow(QMainWindow):
             self.current_theme = "light"
         self.load_map()
 
-
     def clean(self):
         self.point = False
         self.addressLine.clear()
@@ -76,7 +74,6 @@ class MainWindow(QMainWindow):
     def find(self):
         self.search_window = SearchWindow(self)
         self.search_window.exec()
-
 
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
@@ -122,7 +119,7 @@ class SearchWindow(QDialog):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
-        uic.loadUi('search.ui', self)
+        uic.loadUi('SearchWindow.ui', self)
 
         self.index = False
         self.findButton.clicked.connect(self.search)
@@ -160,7 +157,6 @@ class SearchWindow(QDialog):
                 self.main_window.addressLine.setText(f'{toponym_address} Индекс: {toponym_index}')
             else:
                 self.main_window.addressLine.setText(toponym_address)
-
 
             self.main_window.load_map()
 
