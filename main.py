@@ -121,16 +121,17 @@ class SearchWindow(QDialog):
         self.main_window = main_window
         uic.loadUi('SearchWindow.ui', self)
 
-        self.index = False
+        self.index = ""
+        self.address = ""
+
         self.findButton.clicked.connect(self.search)
         self.indexButton.toggled.connect(self.toggle_index)
 
     def toggle_index(self):
-        if self.indexButton.isChecked():
-            self.index = True
+        if self.indexButton.isChecked() and self.index:
+            self.main_window.addressLine.setText(f'{self.address} Индекс: {self.index}')
         else:
-            self.index = False
-        self.search()
+            self.main_window.addressLine.setText(self.address)
 
     def search(self):
         self.main_window.point = True
@@ -153,10 +154,10 @@ class SearchWindow(QDialog):
             self.main_window.point0 = float(toponym_coodrinates[0])
             self.main_window.point1 = float(toponym_coodrinates[1])
 
-            if self.index and toponym_index:
-                self.main_window.addressLine.setText(f'{toponym_address} Индекс: {toponym_index}')
-            else:
-                self.main_window.addressLine.setText(toponym_address)
+            self.index = toponym_index
+            self.address = toponym_address
+
+            self.main_window.addressLine.setText(self.address)
 
             self.main_window.load_map()
 
